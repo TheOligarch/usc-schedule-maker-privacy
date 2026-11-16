@@ -2,7 +2,7 @@
 
 **USC Schedule Maker** (the Chrome extension)
 
-Effective date: 2026-11-15
+Effective date: 2026-11-16
 
 USC Schedule Maker helps USC students build and compare class schedules. This policy explains what the extension does with your information, in plain language. It describes what the extension's code actually does.
 
@@ -40,9 +40,9 @@ The AI backend is a set of Supabase Edge Functions run by the project. The exten
 | **Schedule explanations** | Your interview preferences and the top schedules shown (at most 10): their courses, sections, meeting times, instructors and scores |
 | **Schedule feedback** that the extension cannot interpret on its own | The text you typed, the courses being scheduled with their public section details, and the schedule you are looking at |
 
-The backend uses this to look up matching courses in the public course catalog and sends a prompt built from it to **Anthropic**, which provides the Claude AI model. Anthropic acts as our service provider (a processor): it processes the request to generate the reply and handles API data under its own [commercial terms](https://www.anthropic.com/legal/commercial-terms) and [privacy policy](https://www.anthropic.com/legal/privacy). The AI's reply (questions, suggested courses, explanations, structured feedback) is shown to you and stored with your plan on your device.
+The backend uses this to look up matching courses in the public course catalog and sends a prompt built from it to **Anthropic**, which provides the Claude AI model. Anthropic acts as our service provider (a processor): it processes the request to generate the reply and handles API data under its own [commercial terms](https://www.anthropic.com/legal/commercial-terms) and [privacy policy](https://www.anthropic.com/legal/privacy). To process repeated requests more cheaply, Anthropic may briefly keep a reusable part of the prompt in memory (about 5 minutes), under those same terms. The AI's reply (questions, suggested courses, explanations, structured feedback) is shown to you and stored with your plan on your device.
 
-**Our backend does not save the content of these requests or replies.** It does not log your answers. Its logs record only an error type, such as "the model call failed", or that a request was rate-limited (which feature and for how long, without the install ID or IP address). Supabase, which hosts the backend, may keep standard technical request logs under its own [privacy policy](https://supabase.com/privacy).
+**Our backend does not save the content of these requests or replies.** It does not log your answers. Its logs record only an error type, such as "the model call failed", that a request was rate-limited (which feature and for how long), and how many tokens each AI call used (which feature and the counts only). These log lines contain no request content, install ID or IP address. Supabase, which hosts the backend, may keep standard technical request logs under its own [privacy policy](https://supabase.com/privacy).
 
 Please do not type sensitive personal information (such as your student ID, health details or passwords) into the interview or feedback boxes. The AI features don't need it.
 
@@ -61,9 +61,9 @@ To keep the free AI backend from being overloaded or abused, the backend limits 
 
 While you view schedules, the extension asks `classes.usc.edu` for live seat counts. These requests contain only the term and course codes, for example "CSCI-103 in Spring 2027". They are sent without your cookies, so they carry no login or account information.
 
-### Course catalog downloads (Supabase Storage)
+### Course catalog downloads (GitHub Pages, Supabase Storage)
 
-The extension downloads public course catalog files (courses, sections, final exam times and instructor ratings) from the project's public Supabase storage. These are ordinary file downloads and contain none of your information.
+The extension downloads public course catalog files (courses, sections, final exam times and instructor ratings) from the project's public GitHub Pages site (`theoligarch.github.io`), or from the project's public Supabase storage if that site is unreachable. GitHub may keep standard technical request logs under its own [privacy statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement). These are ordinary file downloads and contain none of your information.
 
 ## What the extension does on WebReg (webreg.usc.edu)
 
