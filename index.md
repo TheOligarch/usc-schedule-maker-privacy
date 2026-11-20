@@ -2,18 +2,19 @@
 
 **USC Schedule Maker** (the Chrome extension)
 
-Effective date: 2026-11-16
+Effective date: 2026-11-19
 
 USC Schedule Maker helps USC students build and compare class schedules. This policy explains what the extension does with your information, in plain language. It describes what the extension's code actually does.
 
-USC Schedule Maker is an independent student project. It is **not affiliated with, endorsed by, or operated by the University of Southern California (USC) or RateMyProfessors.com**.
+USC Schedule Maker is an independent student project made by Josh Brown. It is **not affiliated with, endorsed by, or operated by the University of Southern California (USC) or RateMyProfessors.com**.
 
 ## The short version
 
 - Your schedule plan stays in your browser. Schedules are generated and ranked on your computer.
 - When you use the AI features, the extension sends what the AI needs (your interview answers, course choices and preferences, or the feedback you type) to our backend, which passes it to Anthropic's Claude model to produce a reply. We do not store the content of these requests.
 - To limit abuse of the AI backend, each install gets a random, anonymous install ID, and the backend stores your IP address only as a keyed hash, never the address itself. These rate-limit records are deleted once their time window (at most 24 hours) ends, and nothing is kept longer than 48 hours.
-- We do not ask for your name, email, USC ID or password, and we never see your WebReg login.
+- **Seat alerts are optional.** If you click **Notify me** on a full section, you give your USC email address so we can email you when a seat opens. We keep it only while you have seat alerts, and every email has links to stop them.
+- We do not ask for your name, USC ID or password, and we never see your WebReg login. We ask for your email only for seat alerts.
 - We do not sell your data, share it with advertisers, or use it for advertising.
 
 ## What stays on your device
@@ -23,6 +24,7 @@ These are kept only in your browser's storage for the extension (`localStorage`,
 - **Your plan:** the term, required courses, pinned sections, GE or elective slots, unit cap, allowed class times, ranking priorities, interview questions and answers, the interview summary and suggested courses, and any schedule feedback you added.
 - **Course data cache:** copies of the public course catalog files the extension downloads, so it can start quickly and work if the network is unavailable.
 - **Install ID:** the random rate-limit ID described below, kept in `chrome.storage.local`.
+- **Seat-alert key:** if you use seat alerts, a second random ID and a private key that identify this install to the seat-alert service (separate from the rate-limit ID), and a copy of your seat-alert list, kept in `chrome.storage.local`.
 
 The schedules themselves are generated and ranked by code running in your browser.
 
@@ -57,6 +59,19 @@ To keep the free AI backend from being overloaded or abused, the backend limits 
 - **What is stored:** counters only. Each record holds the install ID or the hashed IP address, the endpoint, the start and end of a time window (one hour or one day), and how much AI usage was counted in it. No request content is stored.
 - **Retention:** each record is **deleted once its window ends** (windows last at most 24 hours), either on the next AI request or by an hourly cleanup job, which also removes anything older than 48 hours.
 
+### Seat alerts ("Notify me"), only if you use them
+
+Seat alerts email you when a seat opens in a full section you choose. Nothing is sent until you click **Notify me** and enter your email.
+
+- **What is sent:** your USC email address (only `@usc.edu` addresses are accepted), the term, section number and course code of each section you watch, and this install's seat-alert ID and private key. The service stores a scrambled form (SHA-256 hash) of the key, never the key itself.
+- **What is stored on our backend (Supabase):** your email address and when you confirmed it; the sections you watch, with their public course details (title, time, instructor); when each alert was sent and whether you clicked a link in it; and how many emails were sent each day. Watches stay with this install and are not linked to any account, name, WebReg data or the rate-limit install ID.
+- **Confirmation first:** we send one email with a link to confirm your address. Nothing else is sent until you press its button. An unconfirmed address is deleted after 24 hours.
+- **Emails:** sent through **Amazon Simple Email Service (SES)**, which acts as our service provider (a processor) to deliver them, under the [AWS Privacy Notice](https://aws.amazon.com/privacy/) and [AWS Service Terms](https://aws.amazon.com/service-terms/). If an email bounces or you mark it as spam, Amazon tells us and we stop emailing that address; we then keep only a scrambled form (SHA-256 hash) of the address so it is not emailed again. The emails contain no tracking pixels.
+- **Links in the emails** open a small page on the project's GitHub Pages site. A link changes something (confirm, "Got it", stop alerts, unsubscribe) only when you press its button there; "Open in WebReg" tells us it was clicked and takes you to WebReg. We record only whether an alert's link was clicked, because the next alert for that section waits until you have seen this one. Your email apps' one-click unsubscribe also works.
+- **Rate limits:** like the AI features, seat-alert requests are limited per install and per network, using the same keyed hash of your IP address and the same deletion rules (see Rate limiting below).
+- **Our server checks seats** for the sections you watch on USC's public course site (`classes.usc.edu`), with requests that contain only the term and course code, about every 5 minutes.
+- **Retention:** a watch ends and is deleted when the class starts. You can remove a class or a section in the toolbar popup at any time, or use "Stop alerts for this section" or "Unsubscribe from all" in any alert. Your address is deleted within a day after your last watch ends or is removed. Removing the extension does not reach the server; your watches then end when the classes start, or unsubscribe from any alert email.
+
 ### To USC's public course site (classes.usc.edu)
 
 While you view schedules, the extension asks `classes.usc.edu` for live seat counts. These requests contain only the term and course codes, for example "CSCI-103 in Spring 2027". They are sent without your cookies, so they carry no login or account information.
@@ -70,6 +85,7 @@ The extension downloads public course catalog files (courses, sections, final ex
 The extension runs a content script on `webreg.usc.edu` pages only. There, it:
 
 - **Adds a "myScheduleMaker" tab** to WebReg's navigation and shows the app in a panel when you click it. To place the tab it reads the page's navigation links. It does not read your grades, personal details, registration status or other account information.
+- **Adds "Notify me" buttons** to full sections on WebReg's course pages and myCourseBin. To find them it reads the section numbers, course codes and seat counts that WebReg lists. Nothing read there is sent anywhere unless you ask for a seat alert, and then only that section's term, number and course code.
 - **Highlights sections** that a schedule picked when you open a course from a schedule's "Register" link. This is visual only. Nothing is clicked, submitted or added.
 - **Adds sections to your myCourseBin, only when you ask.** When you click **Add all to myCourseBin** on a schedule and confirm the list, the content script acts **in your own signed-in WebReg session**. For each course it loads WebReg's course page, reads the current term, checks whether each section is already in your bin, and sends the same "Add to myCourseBin" request that WebReg's own button sends, including the security token WebReg puts on that page. It never sees or stores your WebReg password.
 
@@ -84,7 +100,7 @@ A separate scheduled job in this project (not part of the extension) collects **
 - We do not sell, rent or trade your information.
 - We do not use or share your information for advertising, marketing or credit decisions.
 - We do not use analytics, tracking pixels or advertising SDKs.
-- We do not create user accounts or ask for your name, email, USC ID or passwords.
+- We do not create user accounts or ask for your name, USC ID or passwords. We ask for an email address only for seat alerts, and use it only to send them.
 - We do not use or transfer your information for any purpose other than providing the extension's features.
 
 The use of information received through Chrome extension APIs follows the [Chrome Web Store User Data Policy](https://developer.chrome.com/docs/webstore/program-policies/user-data-faq), including its Limited Use requirements.
@@ -93,6 +109,7 @@ The use of information received through Chrome extension APIs follows the [Chrom
 
 - **Skip the AI.** You can build schedules without the AI interview; the offline interview sends nothing.
 - **Delete your local data.** Remove the extension in `chrome://extensions`, or clear its stored data, to delete everything it kept on your device.
+- **Seat alerts:** remove watches in the toolbar popup, or use "Stop alerts for this section" or "Unsubscribe from all" in any alert. Your address is deleted within a day after your last watch, and every watch ends when its class starts.
 - **Rate-limit data** is deleted once its window (at most 24 hours) ends, and never kept past 48 hours. Because it is anonymous, we cannot look it up by person. Removing the extension deletes its install ID; a new install gets a new one.
 
 ## Children
